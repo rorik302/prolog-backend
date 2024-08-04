@@ -17,9 +17,15 @@ annotated-types==0.7.0
 anyio==4.4.0
     # via httpx
     # via litestar
+argon2-cffi==23.1.0
+    # via prolog-backend
+argon2-cffi-bindings==21.2.0
+    # via argon2-cffi
 certifi==2024.7.4
     # via httpcore
     # via httpx
+cffi==1.16.0
+    # via argon2-cffi-bindings
 click==8.1.7
     # via litestar
     # via rich-click
@@ -58,6 +64,8 @@ psycopg==3.2.1
     # via prolog-backend
 psycopg-binary==3.2.1
     # via psycopg
+pycparser==2.22
+    # via cffi
 pydantic==2.8.2
     # via pydantic-settings
 pydantic-core==2.20.1
