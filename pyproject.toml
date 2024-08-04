@@ -5,6 +5,7 @@ description = "Backend for prolog"
 dependencies = [
     "litestar>=2.10.0",
     "uvicorn>=0.30.5",
+    "pydantic-settings>=2.4.0",
 ]
 readme = "README.md"
 requires-python = ">= 3.12"
