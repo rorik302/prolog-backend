@@ -20,7 +20,9 @@ class DatabaseRepository(BaseRepository):
     def _get_alembic_config(self, schema_name: str):
         config = Config(alembic_settings.INI_PATH)
         ini_section = (
-            alembic_settings.SHARED_INI_SECTION if schema_name == database_settings.SHARED_SCHEMA_NAME else None
+            alembic_settings.SHARED_INI_SECTION
+            if schema_name == database_settings.SHARED_SCHEMA_NAME
+            else alembic_settings.TENANT_INI_SECTION
         )
         config.config_ini_section = ini_section
         config.attributes["session"] = self.session
