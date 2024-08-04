@@ -24,3 +24,28 @@ def create_schema():
             return
         db_repo.create_schema(schema_name=schema_name)
         session.commit()
+
+
+@database_group.command("make_migrations")
+def make_migrations():
+    """Создание файлов миграции"""
+
+    while len(schema_name := input("Имя схемы: ")) == 0:
+        print("Название схемы не может быть пустым")
+
+    while len(message := input("Сообщение: ")) == 0:
+        print("Сообщение не может быть пустым")
+
+    with Session() as session:
+        DatabaseRepository(session=session).make_migrations(schema_name=schema_name, message=message)
+
+
+@database_group.command("migrate")
+def migrate():
+    """Миграция схемы базы данных"""
+
+    while len(schema_name := input("Имя схемы: ")) == 0:
+        print("Название схемы не может быть пустым")
+
+    with Session() as session:
+        DatabaseRepository(session=session).migrate(schema_name=schema_name)
