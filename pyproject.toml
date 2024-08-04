@@ -6,6 +6,7 @@ dependencies = [
     "litestar>=2.10.0",
     "uvicorn>=0.30.5",
     "pydantic-settings>=2.4.0",
+    "sqlalchemy>=2.0.31",
 ]
 readme = "README.md"
 requires-python = ">= 3.12"
