@@ -36,3 +36,6 @@ line-length = 120
 
 [tool.ruff.lint]
 select = ["E", "W", "F", "C", "B", "I"]
+
+[tool.rye.scripts]
+cli = {cmd = "python src/prolog_backend/cli/__main__.py"}
