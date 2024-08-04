@@ -86,5 +86,7 @@ typing-extensions==4.12.2
     # via pydantic-core
     # via rich-click
     # via sqlalchemy
+uuid6==2024.7.10
+    # via prolog-backend
 uvicorn==0.30.5
     # via prolog-backend
