@@ -70,6 +70,10 @@ platformdirs==4.2.2
 polyfactory==2.16.2
     # via litestar
 pre-commit==3.8.0
+psycopg==3.2.1
+    # via prolog-backend
+psycopg-binary==3.2.1
+    # via psycopg
 pydantic==2.8.2
     # via pydantic-settings
 pydantic-core==2.20.1
@@ -101,6 +105,7 @@ sqlalchemy==2.0.31
 typing-extensions==4.12.2
     # via litestar
     # via polyfactory
+    # via psycopg
     # via pydantic
     # via pydantic-core
     # via rich-click
