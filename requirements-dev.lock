@@ -27,6 +27,7 @@ certifi==2024.7.4
     # via httpx
 cffi==1.16.0
     # via argon2-cffi-bindings
+    # via cryptography
 cfgv==3.4.0
     # via pre-commit
 click==8.1.7
@@ -34,6 +35,8 @@ click==8.1.7
     # via litestar
     # via rich-click
     # via uvicorn
+cryptography==43.0.0
+    # via pyjwt
 distlib==0.3.8
     # via virtualenv
 dnspython==2.6.1
@@ -106,6 +109,8 @@ pydantic-settings==2.4.0
     # via prolog-backend
 pygments==2.18.0
     # via rich
+pyjwt==2.9.0
+    # via prolog-backend
 pytest==8.3.2
     # via pytest-dotenv
 pytest-dotenv==0.5.2

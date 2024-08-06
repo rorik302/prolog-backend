@@ -26,10 +26,13 @@ certifi==2024.7.4
     # via httpx
 cffi==1.16.0
     # via argon2-cffi-bindings
+    # via cryptography
 click==8.1.7
     # via litestar
     # via rich-click
     # via uvicorn
+cryptography==43.0.0
+    # via pyjwt
 dnspython==2.6.1
     # via email-validator
 email-validator==2.2.0
@@ -79,6 +82,8 @@ pydantic-settings==2.4.0
     # via prolog-backend
 pygments==2.18.0
     # via rich
+pyjwt==2.9.0
+    # via prolog-backend
 python-dateutil==2.9.0.post0
     # via faker
 python-dotenv==1.0.1
