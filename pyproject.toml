@@ -26,6 +26,8 @@ dev-dependencies = [
     "black>=24.8.0",
     "ruff>=0.5.6",
     "pre-commit>=3.8.0",
+    "pytest>=8.3.2",
+    "pytest-dotenv>=0.5.2",
 ]
 
 [tool.hatch.metadata]
