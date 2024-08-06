@@ -47,3 +47,6 @@ select = ["E", "W", "F", "C", "B", "I"]
 
 [tool.rye.scripts]
 cli = {cmd = "python src/prolog_backend/cli/__main__.py"}
+
+[tool.pytest.ini_options]
+env_files = [".env.test"]
