@@ -1,4 +1,4 @@
-from typing import TypeVar
+from typing import Generic, TypeVar
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -14,8 +14,8 @@ class BaseRepository:
 ModelType = TypeVar("ModelType", bound=BaseModel)
 
 
-class SQLAlchemyRepository(BaseRepository):
-    model = None
+class SQLAlchemyRepository(BaseRepository, Generic[ModelType]):
+    model: ModelType | None = None
 
     def __init__(self, session: Session):
         if self.model is None:
