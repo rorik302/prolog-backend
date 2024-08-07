@@ -17,5 +17,13 @@ services:
       timeout: 5s
       retries: 5
 
+  redis:
+    image: "docker.io/redis:7.4.0-alpine"
+    ports:
+      - ${REDIS_PORT}:6379
+    command:
+      - --requirepass ${REDIS_PASSWORD}
+    restart: unless-stopped
+
 volumes:
   postgres:
