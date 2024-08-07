@@ -1,11 +1,14 @@
 import pytest
+from litestar.testing import TestClient
+from prolog_backend.app import create_app
 from prolog_backend.config.app import Mode, app_settings
 from prolog_backend.config.database import database_settings
 from prolog_backend.models import SharedModel, TenantModel
 from prolog_backend.models.tenant import Tenant
 from prolog_backend.models.user import User
 from prolog_backend.utils.hasher import Hasher
-from prolog_backend.utils.sqlalchemy import engine
+from prolog_backend.utils.sqlalchemy import Session, engine
+from prolog_backend.utils.unit_of_work import UnitOfWork
 from sqlalchemy import insert
 from sqlalchemy.sql.ddl import CreateSchema, DropSchema
 
@@ -29,6 +32,7 @@ def prepare_db():
         conn.execute(insert(Tenant).values(id=test_settings.TENANT_UUID, schema_name=test_settings.TENANT_SCHEMA_NAME))
         conn.execute(
             insert(User).values(
+                id=test_settings.USER_UUID,
                 email=test_settings.USER_EMAIL,
                 password=Hasher.hash(value=test_settings.USER_PASSWORD),
                 tenant_id=test_settings.TENANT_UUID,
@@ -43,3 +47,24 @@ def prepare_db():
         conn.execute(DropSchema(name=database_settings.SHARED_SCHEMA_NAME, if_exists=True, cascade=True))
         conn.execute(DropSchema(name=test_settings.TENANT_SCHEMA_NAME, if_exists=True, cascade=True))
         conn.commit()
+
+
+@pytest.fixture
+def session():
+    with Session() as session:
+        yield session
+
+
+@pytest.fixture
+def uow(session) -> UnitOfWork:
+    return UnitOfWork(session=session)
+
+
+@pytest.fixture(scope="session")
+def app():
+    return create_app()
+
+
+@pytest.fixture
+def base_client(app):
+    return TestClient(app=app)
