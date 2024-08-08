@@ -1,4 +1,5 @@
 from datetime import UTC, datetime, timedelta
+from uuid import UUID
 
 from argon2.exceptions import VerifyMismatchError
 from litestar import Request
@@ -8,14 +9,16 @@ from prolog_backend.config.api import api_settings
 from prolog_backend.config.jwt import jwt_settings
 from prolog_backend.exceptions.auth import InvalidPassword
 from prolog_backend.exceptions.user import UserDoesNotExist, UserIsNotActive
+from prolog_backend.models.user import User
 from prolog_backend.schemas.auth import LoginCredentials, LoginResult
 from prolog_backend.schemas.token import Token, TokenPurpose
+from prolog_backend.schemas.user import UserOut
 from prolog_backend.services.base import BaseService
 from prolog_backend.utils.hasher import Algorithm, Hasher
 
 
 class AuthService(BaseService):
-    def login(self, data: LoginCredentials, request: Request) -> LoginResult:
+    def login(self, data: LoginCredentials, request: Request | None = None) -> LoginResult:
         with self.uow:
             user = self.uow.user.get_or_none(email=data.email)
             if user is None:
@@ -41,9 +44,19 @@ class AuthService(BaseService):
         self.uow.memory.sessions.set(
             name=str(user.id), value=access_token, ex=timedelta(minutes=jwt_settings.ACCESS_TOKEN_LIFETIME_MINUTES)
         )
-        if refresh_cookie := request.cookies.get(api_settings.REFRESH_COOKIE_KEY):
-            self.uow.memory.refresh_tokens_blacklist.set(
-                refresh_cookie, "", timedelta(minutes=jwt_settings.REFRESH_TOKEN_LIFETIME_MINUTES)
-            )
+        if request is not None:
+            if refresh_cookie := request.cookies.get(api_settings.REFRESH_COOKIE_KEY):
+                self.uow.memory.refresh_tokens_blacklist.set(
+                    refresh_cookie, "", timedelta(minutes=jwt_settings.REFRESH_TOKEN_LIFETIME_MINUTES)
+                )
 
         return result
+
+    def get_user_by_id(self, user_id: UUID) -> User | None:
+        with self.uow:
+            user = self.uow.user.get_or_none(id=user_id)
+        return user
+
+    @staticmethod
+    def get_user_from_request(request: Request) -> UserOut:
+        return UserOut.to_model(request.user)

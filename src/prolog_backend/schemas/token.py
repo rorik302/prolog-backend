@@ -20,3 +20,7 @@ class Token(BaseSchema):
 
     def to_jwt(self):
         return jwt.encode(payload=self.to_json(), key=jwt_settings.PRIVATE_KEY, algorithm=jwt_settings.ALGORITHM)
+
+    @classmethod
+    def from_jwt(cls, token: str):
+        return cls(**jwt.decode(jwt=token, key=jwt_settings.PUBLIC_KEY, algorithms=[jwt_settings.ALGORITHM]))
