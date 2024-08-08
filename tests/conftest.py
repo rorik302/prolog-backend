@@ -1,11 +1,14 @@
 import pytest
 from litestar.testing import TestClient
 from prolog_backend.app import create_app
+from prolog_backend.config.api import api_settings
 from prolog_backend.config.app import Mode, app_settings
 from prolog_backend.config.database import database_settings
 from prolog_backend.models import SharedModel, TenantModel
 from prolog_backend.models.tenant import Tenant
 from prolog_backend.models.user import User
+from prolog_backend.schemas.auth import LoginCredentials
+from prolog_backend.services.auth import AuthService
 from prolog_backend.utils.hasher import Hasher
 from prolog_backend.utils.sqlalchemy import Session, engine
 from prolog_backend.utils.unit_of_work import UnitOfWork
@@ -68,3 +71,14 @@ def app():
 @pytest.fixture
 def base_client(app):
     return TestClient(app=app)
+
+
+@pytest.fixture
+def client(session, base_client):
+    result = AuthService(session=session).login(
+        data=LoginCredentials(email=test_settings.USER_EMAIL, password=test_settings.USER_PASSWORD)
+    )
+    base_client.headers.update({api_settings.AUTH_HEADER_KEY: f"Bearer {result.access_token}"})
+    base_client.cookies.set(name=api_settings.REFRESH_COOKIE_KEY, value=result.refresh_token)
+    base_client.cookies.set(name=api_settings.SESSION_ID_COOKIE_KEY, value=result.session_id)
+    return base_client
