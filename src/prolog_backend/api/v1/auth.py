@@ -1,6 +1,6 @@
 from datetime import timedelta
 
-from litestar import Request, Response, post
+from litestar import Request, Response, get, post
 from litestar.datastructures import Cookie, ResponseHeader
 from sqlalchemy.orm import Session
 
@@ -8,6 +8,7 @@ from prolog_backend.api.base import BaseController
 from prolog_backend.config.api import api_settings
 from prolog_backend.config.jwt import jwt_settings
 from prolog_backend.schemas.auth import LoginCredentials
+from prolog_backend.schemas.user import UserOut
 from prolog_backend.services.auth import AuthService
 
 
@@ -15,7 +16,7 @@ class AuthController(BaseController):
     path = "/auth"
     tags = ["Auth"]
 
-    @post("/login", sync_to_thread=False)
+    @post("/login", name="login", sync_to_thread=False)
     def login(self, request: Request, session: Session, data: LoginCredentials) -> Response:
         result = AuthService(session=session).login(data=data, request=request)
         return Response(
@@ -40,3 +41,7 @@ class AuthController(BaseController):
                 ),
             ],
         )
+
+    @get("/me", sync_to_thread=False)
+    def current_user(self, session: Session, request: Request) -> UserOut:
+        return AuthService(session=session).get_user_from_request(request=request)
