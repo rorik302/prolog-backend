@@ -72,3 +72,12 @@ class TestAuthAPI:
             )
             assert response.status_code == 403
             assert response.json()["detail"] == "UserIsNotActive"
+
+    def test_current_user(self, client):
+        response = client.get("/api/v1/auth/me")
+
+        assert response.status_code == 200
+        assert response.json()["id"] == str(test_settings.USER_UUID)
+        assert response.json()["email"] == test_settings.USER_EMAIL
+        assert response.json()["tenant_id"] == str(test_settings.TENANT_UUID)
+        assert response.json()["is_active"]
