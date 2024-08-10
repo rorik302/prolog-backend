@@ -60,3 +60,12 @@ class AuthService(BaseService):
     @staticmethod
     def get_user_from_request(request: Request) -> UserOut:
         return UserOut.to_model(request.user)
+
+    def logout(self, request: Request):
+        with self.uow:
+            self.uow.memory.sessions.delete(str(request.user.id))
+
+        if refresh_cookie := request.cookies.get(api_settings.REFRESH_COOKIE_KEY):
+            self.uow.memory.refresh_tokens_blacklist.set(
+                refresh_cookie, "", timedelta(minutes=jwt_settings.REFRESH_TOKEN_LIFETIME_MINUTES)
+            )

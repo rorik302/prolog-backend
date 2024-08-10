@@ -45,3 +45,11 @@ class AuthController(BaseController):
     @get("/me", sync_to_thread=False)
     def current_user(self, session: Session, request: Request) -> UserOut:
         return AuthService(session=session).get_user_from_request(request=request)
+
+    @post("/logout", sync_to_thread=False)
+    def logout(self, session: Session, request: Request) -> Response:
+        AuthService(session=session).logout(request=request)
+        response = Response(content=None, status_code=204)
+        response.delete_cookie(api_settings.REFRESH_COOKIE_KEY)
+        response.delete_cookie(api_settings.SESSION_ID_COOKIE_KEY)
+        return response

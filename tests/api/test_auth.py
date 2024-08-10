@@ -2,6 +2,7 @@ import pytest
 from prolog_backend.config.api import api_settings
 from prolog_backend.models.tenant import Tenant
 from prolog_backend.models.user import User
+from prolog_backend.repositories.memory import MemoryRepository
 from prolog_backend.schemas.auth import LoginCredentials
 from prolog_backend.utils.hasher import Hasher
 from sqlalchemy import delete, insert, select
@@ -81,3 +82,11 @@ class TestAuthAPI:
         assert response.json()["email"] == test_settings.USER_EMAIL
         assert response.json()["tenant_id"] == str(test_settings.TENANT_UUID)
         assert response.json()["is_active"]
+
+    def test_logout(self, client):
+        response = client.post("/api/v1/auth/logout")
+
+        assert response.status_code == 204
+        assert MemoryRepository().sessions.get(name=str(test_settings.USER_UUID)) is None
+        assert api_settings.REFRESH_COOKIE_KEY not in response.cookies
+        assert api_settings.SESSION_ID_COOKIE_KEY not in response.cookies
