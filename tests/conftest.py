@@ -7,6 +7,7 @@ from prolog_backend.config.database import database_settings
 from prolog_backend.models import SharedModel, TenantModel
 from prolog_backend.models.tenant import Tenant
 from prolog_backend.models.user import User
+from prolog_backend.repositories.memory import MemoryRepository
 from prolog_backend.schemas.auth import LoginCredentials
 from prolog_backend.services.auth import AuthService
 from prolog_backend.utils.hasher import Hasher
@@ -16,6 +17,14 @@ from sqlalchemy import insert
 from sqlalchemy.sql.ddl import CreateSchema, DropSchema
 
 from tests.config import test_settings
+
+
+def clear_memory_repo():
+    memory_repo = MemoryRepository()
+    for key in memory_repo.sessions.keys():
+        memory_repo.sessions.delete(key)
+    for key in memory_repo.refresh_tokens_blacklist.keys():
+        memory_repo.refresh_tokens_blacklist.delete(key)
 
 
 @pytest.fixture(autouse=True)
@@ -30,6 +39,9 @@ def prepare_db():
         conn.execute(CreateSchema(name=test_settings.TENANT_SCHEMA_NAME, if_not_exists=True))
         SharedModel.metadata.create_all(bind=conn)
         TenantModel.metadata.create_all(bind=conn)
+
+        # Очистка Redis
+        clear_memory_repo()
 
         # Создание тенанта и пользователя
         conn.execute(insert(Tenant).values(id=test_settings.TENANT_UUID, schema_name=test_settings.TENANT_SCHEMA_NAME))
@@ -50,6 +62,7 @@ def prepare_db():
         conn.execute(DropSchema(name=database_settings.SHARED_SCHEMA_NAME, if_exists=True, cascade=True))
         conn.execute(DropSchema(name=test_settings.TENANT_SCHEMA_NAME, if_exists=True, cascade=True))
         conn.commit()
+    clear_memory_repo()
 
 
 @pytest.fixture
