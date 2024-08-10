@@ -53,3 +53,29 @@ class AuthController(BaseController):
         response.delete_cookie(api_settings.REFRESH_COOKIE_KEY)
         response.delete_cookie(api_settings.SESSION_ID_COOKIE_KEY)
         return response
+
+    @post("/refresh", sync_to_thread=False)
+    def refresh(self, session: Session, request: Request) -> Response:
+        result = AuthService(session=session).refresh_tokens(request=request)
+        return Response(
+            content=None,
+            status_code=200,
+            headers=[ResponseHeader(name=api_settings.AUTH_HEADER_KEY, value=result.access_token)],
+            cookies=[
+                Cookie(
+                    key=api_settings.REFRESH_COOKIE_KEY,
+                    value=result.refresh_token,
+                    max_age=int(timedelta(minutes=jwt_settings.REFRESH_TOKEN_LIFETIME_MINUTES).total_seconds()),
+                    httponly=True,
+                    secure=True,
+                    samesite="strict",
+                ),
+                Cookie(
+                    key=api_settings.SESSION_ID_COOKIE_KEY,
+                    value=result.session_id,
+                    max_age=int(timedelta(minutes=jwt_settings.ACCESS_TOKEN_LIFETIME_MINUTES).total_seconds()),
+                    httponly=True,
+                    samesite="strict",
+                ),
+            ],
+        )

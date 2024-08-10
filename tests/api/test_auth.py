@@ -90,3 +90,12 @@ class TestAuthAPI:
         assert MemoryRepository().sessions.get(name=str(test_settings.USER_UUID)) is None
         assert api_settings.REFRESH_COOKIE_KEY not in response.cookies
         assert api_settings.SESSION_ID_COOKIE_KEY not in response.cookies
+
+    def test_refresh(self, client):
+        response = client.post("/api/v1/auth/refresh")
+
+        assert response.status_code == 200
+        assert api_settings.AUTH_HEADER_KEY in response.headers
+        assert api_settings.REFRESH_COOKIE_KEY in response.cookies
+        assert api_settings.SESSION_ID_COOKIE_KEY in response.cookies
+        assert MemoryRepository().sessions.get(name=str(test_settings.USER_UUID))
