@@ -1,9 +1,12 @@
+from datetime import UTC, datetime, timedelta
+
 from jwt import InvalidSignatureError
 from litestar.connection import ASGIConnection
 from litestar.middleware import AbstractAuthenticationMiddleware, AuthenticationResult, DefineMiddleware
 from litestar.types import ASGIApp
 
 from prolog_backend.config.api import api_settings
+from prolog_backend.config.jwt import jwt_settings
 from prolog_backend.exceptions.auth import InvalidAuthHeader, InvalidSessionID, InvalidToken, SessionIDNotProvided
 from prolog_backend.exceptions.user import UserDoesNotExist
 from prolog_backend.repositories.memory import MemoryRepository
@@ -25,15 +28,20 @@ class RequestAuthMiddleware(AbstractAuthenticationMiddleware):
         if session_id is None:
             SessionIDNotProvided(status_code=401, default_detail=True).raise_exception()
 
+        invalid_token_exc = InvalidToken(status_code=401, default_detail=True).raise_exception
         encoded_token = auth_header.split("Bearer ")[-1]
         try:
             token = Token.from_jwt(token=encoded_token)
         except InvalidSignatureError:
-            InvalidToken(status_code=401, default_detail=True).raise_exception()
+            invalid_token_exc()
             raise
-
         if token.purpose != TokenPurpose.ACCESS:
-            InvalidToken(status_code=401, default_detail=True).raise_exception()
+            invalid_token_exc()
+        if (
+            token.iat + timedelta(minutes=jwt_settings.ACCESS_TOKEN_LIFETIME_MINUTES).total_seconds()
+            < datetime.now(UTC).timestamp()
+        ):
+            invalid_token_exc()
 
         if Hasher.hash(value=session_id, algorithm=Algorithm.SHA1) != token.session_id:
             InvalidSessionID(status_code=401, default_detail=True).raise_exception()
@@ -43,7 +51,7 @@ class RequestAuthMiddleware(AbstractAuthenticationMiddleware):
             if user is None:
                 UserDoesNotExist(status_code=401, default_detail=True).raise_exception()
             if MemoryRepository().sessions.get(name=str(user.id)) != encoded_token:
-                InvalidToken(status_code=401, default_detail=True).raise_exception()
+                invalid_token_exc()
 
         return AuthenticationResult(user=user, auth=token)
 
